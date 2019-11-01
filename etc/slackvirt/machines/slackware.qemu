@@ -1,0 +1,8 @@
+VMNAME=slackware
+SLACKWARE_VERSION=${SLACKWARE_VERSION:-"14.2"}
+SLACKWARE_ARCH=${SLACKWARE_ARCH:-"slackware"}
+MEMORY=2G
+
+source /usr/local/etc/slackvirt/machines/slackware/$SLACKWARE_ARCH-$SLACKWARE_VERSION/slackware.qemu
+#source /usr/local/etc/slackvirt/machines/i440fx/default
+source /usr/local/etc/slackvirt/machines/q35/default

@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# Dual mode wireless configuration
+#
+# William PC, Seattle, 2019
+
+IWFACE=wlan0
+DHCPDPID=/var/run/dhcpd-hostapd.pid
+
+function start(){
+  /usr/sbin/iw dev $IWFACE interface add $IWFACE\-sta type managed addr 6c:2b:59:41:19:1f
+  /usr/sbin/iw dev $IWFACE interface add $IWFACE\-ap type managed addr  6c:2b:59:41:19:ac
+  
+  /etc/rc.d/rc.inet1 $IWFACE\-ap start
+  /etc/rc.d/rc.inet1 $IWFACE\-sta_start
+
+  sleep 1
+
+  # HostAP daemon
+  cp -av /usr/local/etc/hostapd.conf /etc/hostapd/hostapd.conf
+  [ -x /etc/rc.d/rc.hostapd ] && /etc/rc.d/rc.hostapd start
+
+  # DHCP server at wireless ap interface
+  $(sleep 2 && dhcpd -cf /usr/local/etc/dhcpd-hostap.conf -pf $DHCPDPID $IWFACE\-ap) &
+}
+
+function stop(){
+  [ -f $DHCPDPID ] && kill $(cat $DHCPDPID)
+
+  [ -x /etc/rc.d/rc.hostapd ] && /etc/rc.d/rc.hostapd stop
+
+  /etc/rc.d/rc.inet1 $IWFACE\-sta_stop
+  /etc/rc.d/rc.inet1 $IWFACE\-ap_stop
+
+  /usr/sbin/iw $IWFACE\-sta del
+  /usr/sbin/iw $IWFACE\-ap del
+}
+
+case $1 in
+	stop)
+	stop
+	;;
+	start)
+	start
+	;;
+	restart)
+	stop; sleep 1;start
+	;;
+esac

@@ -1,0 +1,131 @@
+[app] (name=fbrun)
+  [Position]	(CENTER)	{0 0}
+  [Layer]	{2}
+[end]
+[group]
+  [app] (@WM_NAME=(server)-(monitor|console).sock)
+  [Workspace]	{0}
+  [Tab]		{yes}
+  [Jump]	{yes}
+  [Layer]	{2}
+[end]
+[group]
+  [app] (@WM_NAME=(desktop)-(monitor|console).sock)
+  [Workspace]	{0}
+  [Tab]		{yes}
+  [Jump]	{yes}
+  [Layer]	{2}
+[end]
+[app] (@WM_NAME=(desktop)-(ttyS1).sock)
+  [Workspace]	{1}
+  [Jump]	{yes}
+  [Layer]	{2}
+[end]
+[app] (name=virt-manager)
+  [Workspace]	{0}
+  [Jump]	{yes}
+  [Layer]	{2}
+[end]
+[app] (@WM_NAME=(notemon))
+  [Workspace]	{0}
+  [Dimensions]	{190 110}
+  [IconHidden]	{yes}
+  [Sticky]	{yes}
+  [Layer]	{2}
+[end]
+[app] (@WM_NAME=(megalnx).*("Virt Viewer"))
+  [Workspace]	{1}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(Win10-32bit).*(on QEMU/KVM|"Virt Viewer"))
+  [Workspace]	{2}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (name=virt-viewer)
+  [Workspace]	{3}
+  [Dimensions]	{1024 768}
+  [Position]	(CENTER)	{0 0}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(Xnest :1.0))
+  [Workspace]	{3}
+  [Position]	(CENTER)	{0 0}
+  [Deco]	{NONE}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(spice display 0:0))
+  [Dimensions]	{800 600}
+  [Position]	(CENTER)	{0 0}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(spice display 1:0))
+  [Dimensions]	{640 360}
+  [Position]	(CENTER)	{0 0}
+  [Minimized]	{yes}
+  [Layer]	{3}
+[end]
+[app] (name=xterm) (class=XTerm)
+[end]
+[app] (@WM_NAME=(megalnx-141):(1) *.* - TigerVNC) {1}
+  [Workspace]	{1}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):2 *.* - TigerVNC)
+  [Workspace]	{2}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):3 *.* - TigerVNC)
+  [Workspace]	{3}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):4 *.* - TigerVNC)
+  [Workspace]	{4}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):5 *.* - TigerVNC)
+  [Workspace]	{5}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):6 *.* - TigerVNC)
+  [Workspace]	{6}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):7 *.* - TigerVNC)
+  [Workspace]	{7}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):8 *.* - TigerVNC)
+  [Workspace]	{8}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (@WM_NAME=(megalnx-141):(11) *.* - TigerVNC) {1}
+  [Workspace]	{9}
+  [Dimensions]	{89% 96%}
+  [Position]	(CENTER)	{0 0}
+  [Jump]	{yes}
+  [Layer]	{3}
+[end]
+[app] (name=vncviewer) (class=Vncviewer)
+  [Position]	(UPPERLEFT)	{6% 2%}
+[end]

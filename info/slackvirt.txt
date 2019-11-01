@@ -1,0 +1,16 @@
+
+Slackware qemu system
+
+Slackware64-14.2
+RAM: 4GB
+DISK: 15GB
+
+The system requires about 7.0GB of storage, but is recommended to use a 15GB if
+you wish to save virtual machine states using libvirt.
+
+It is required about 1.4GB of temporary files for building QEMU (qemu-4.1.0). 
+You can increase the size of your /tmp folder using the following command:
+# mount -o remount,size=1400M /tmp
+or with TARGETS=all about 2.7GB
+# mount -o remount,size=2700M /tmp
+

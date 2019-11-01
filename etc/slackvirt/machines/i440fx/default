@@ -1,0 +1,56 @@
+
+if [ -z "CPU" ]; then
+  CPU="-cpu Skylake-Client-IBRS,ss=on,hypervisor=on,tsc_adjust=on,clflushopt=on,ssbd=on,xsaves=on,pdpe1gb=on,hle=off,rtm=off \
+-smp 4,sockets=1,cores=2,threads=2"
+else
+  CPU="$CPU"
+fi
+MACHINE="-machine pc-i440fx-4.1"
+
+QEMU_CONTROLLERS="
+  -device isa-serial,chardev=serial1,id=serial1 \
+  -device ahci,id=sata0,bus=pci.0,addr=0x8"
+
+QEMU_SERIAL="
+  -device virtio-serial-pci,id=virtio-serial0,bus=pci.0,addr=0x5 \
+  -chardev socket,id=serial1,path=/tmp/$VMNAME-ttyS1.sock,server,nowait"
+
+QEMU_VIDEO="
+  -device vmware-svga,id=video0,vgamem_mb=16,bus=pci.0,addr=0x2"
+
+if [ ! -z "$DISK0" ]; then
+QEMU_DISK="
+  -device ide-cd,bus=ide.0,unit=1,drive=drive-ide0-0-1,id=ide0-0-1,bootindex=2 \
+  -device ide-hd,bus=sata0.0,drive=drive-sata0-0-0,id=sata0-0-0,bootindex=1,write-cache=on \
+  -drive file=$MEDIA,format=raw,if=none,id=drive-ide0-0-1,readonly=on \
+  -drive file=$DISK0,format=raw,if=none,id=drive-sata0-0-0,cache=none,aio=native"
+else
+QEMU_DISK="
+  -device ide-cd,bus=ide.0,unit=1,drive=drive-ide0-0-1,id=ide0-0-1,bootindex=1 \
+  -drive file=$MEDIA,format=raw,if=none,id=drive-ide0-0-1,readonly=on"
+fi
+
+QEMU_AUDIO="
+  -device intel-hda,id=sound0,bus=pci.0,addr=0xe \
+  -device hda-duplex,id=sound0-codec0,bus=sound0.0,cad=0"
+
+QEMU_NET="
+  -netdev bridge,id=hostnet0,br=qemubr0 -device $NET_DRIVE,netdev=hostnet0,id=net0,mac=52:54:00:d0:18:84,bus=pci.0,addr=0x3"
+
+QEMU_MOUSE="
+  -device usb-tablet,id=input1,bus=usb0.0,port=1"
+
+QEMU_USB2="
+  -device ich9-usb-ehci1,id=usb \
+  -device ich9-usb-uhci1,masterbus=usb.0,firstport=0,multifunction=on \
+  -device ich9-usb-uhci2,masterbus=usb.0,firstport=2 \
+  -device ich9-usb-uhci3,masterbus=usb.0,firstport=4"
+
+QEMU_USB3="
+  -device nec-usb-xhci,id=usb0,bus=pci.0,addr=0x6"
+
+QEMU_EXTRA="
+  $QEMU_USB3 \
+  -boot menu=on,strict=on \
+  -device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0xc \
+  -msg timestamp=on"

@@ -1,0 +1,32 @@
+VMNAME=android-x86
+CDROM=/media/hd1/Downloads/android-x86
+ANDROID86_ARCH=x86
+MEMORY=2048
+DISK=/dev/mapper/libvirt-android--x86_SYSTEM
+DATA=/dev/mapper/libvirt-android--x86_DATA
+NET_DRIVE="rtl8139" 
+MEDIA2=/media/hd1/MIRROR/slackware-iso/slackware-14.1-iso/slackware-14.1-install-dvd.iso
+
+# Notes:
+# CMD line boot:
+# boot from local drive: chain.c32 hd0
+# 1.6-donut: kernel /android-1.6/kernel quiet root=/dev/ram0 androidboot.hardware=eeepc acpi_sleep=s3_bios,s3_mode SRC=/android-1.6
+# 4.4-kitkat: kernel /android-4.4-r5/kernel quiet root=/dev/ram0 androidboot.hardware=android_x86 SRC=/android-4.4-r5
+# 5.1-lollipop: kernel /android-5.1-rc1/kernel quiet root=/dev/ram0 androidboot.hardware=android_x86 SRC=/android-5.1-rc1
+
+# Working with 2G RAM, machine pc-i440fx-4.1 (kitkat, lollipop)
+CPU="-cpu kvm32 -smp 4,sockets=1,cores=4,threads=1"
+#MEDIA=$CDROM/1.6-donut/android-x86-1.6.iso
+#MEDIA=$CDROM/4.4-kitkat/android-x86-4.4-r5.iso
+#MEDIA=$CDROM/5.0-lollipop/android-x86-5.1-rc1.iso
+#source /usr/local/etc/slackvirt/machines/android-x86/android-x86_i440fx.qemu
+
+# Working - with 1G RAM, machine q35 (donut, marshmallow, nougat, oreo)
+#CPU_OPTS="ss=on,hypervisor=on,tsc_adjust=on,clflushopt=off,ssbd=off,xsaves=on,hle=off,rtm=off"
+CPU="-cpu IvyBridge,$CPU_OPTS -smp 4,sockets=1,cores=4,threads=1"
+#CPU="-cpu kvm32 -smp 4,sockets=1,cores=4,threads=1"
+#MEDIA=$CDROM/6.0-marshmallow/android-$ANDROID86_ARCH-6.0-r3.iso
+#MEDIA=$CDROM/7.0-nougat/android-$ANDROID86_ARCH-7.1-r2.iso
+MEDIA=$CDROM/8.0-oreo/android-$ANDROID86_ARCH-8.1-r2.iso
+source /usr/local/etc/slackvirt/machines/android-x86/android-x86_q35.qemu
+

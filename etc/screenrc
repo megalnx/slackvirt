@@ -1,0 +1,11 @@
+startup_message off
+maxwin 7
+screen 1
+screen -fn -t dmesg 2 watch -n 10 "dmesg | tail -n 28"
+screen -fn -t top 3 top 
+screen -fn -t disk 4 watch -n 10 "df -h"
+screen -fn -t network 5 watch -n 10 "ifconfig | grep -B2 -A1 inet "
+screen -fn -L -t virsh 6 virsh
+lockscreen
+#screen -fn -t minicom 7 /root/bin/xterm-console-minicom.sh babylon
+#screen -fn -t minicom 8 /root/bin/xterm-console-minicom.sh babylon

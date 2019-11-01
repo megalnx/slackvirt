@@ -1,0 +1,53 @@
+VMNAME=server
+SLACKWARE_VERSION=14.2
+SLACKWARE_ARCH=slackware64
+PKGS_SERIES="A#AP#L#N#"
+CDROM=/media/hd1/MIRROR/slackware-iso
+CPU="-cpu host -smp 4,sockets=1,cores=2,threads=2"
+MACHINE="-machine pc-i440fx-4.1"
+MEMORY=3200
+DISK0=/dev/libvirt/babylon-rootfs
+DISK1=/dev/sda4
+DISK2=/dev/sda2
+MEDIA=$CDROM/$SLACKWARE_ARCH-$SLACKWARE_VERSION-iso/$SLACKWARE_ARCH-$SLACKWARE_VERSION-install-dvd.iso
+NET_DRIVE="virtio-net" 
+
+QEMU_VIDEO="-display none -vga none -nographic"
+
+QEMU_CONTROLLERS_NORMAL="
+  -device ide-hd,bus=ide.0,unit=0,drive=drive-ide0-0-0,id=ide0-0-0,bootindex=1,write-cache=on \
+  -device ide-cd,bus=ide.0,unit=1,drive=drive-ide0-0-1,id=ide0-0-1"
+
+QEMU_CONTROLLERS_VIRTIO="
+  -device virtio-blk-pci,scsi=off,bus=pci.0,addr=0x8,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1,write-cache=on \
+  -device ide-cd,bus=ide.0,unit=1,drive=drive-ide0-0-1,id=ide0-0-1"
+
+QEMU_DISK_NORMAL="
+  -drive file=$DISK0,format=raw,if=none,id=drive-ide0-0-0,cache=none,aio=native  \
+  -drive file=$MEDIA,format=raw,if=none,id=drive-ide0-0-1,readonly=on "
+
+QEMU_DISK_VIRTIO="
+  -drive file=$DISK0,format=raw,if=none,id=drive-virtio-disk0,cache=none,aio=native \
+  -drive file=$MEDIA,format=raw,if=none,id=drive-ide0-0-1,readonly=on "
+
+
+QEMU_CONTROLLERS="$QEMU_CONTROLLERS_NORMAL"
+QEMU_DISK="$QEMU_DISK_NORMAL"
+
+if [ ! -z "$DISK1" ]; then
+QEMU_DISK="
+   $QEMU_DISK \
+   -device ide-hd,bus=ide.1,unit=0,drive=drive-ide0-1-0,id=ide0-1-0,write-cache=on \
+   -drive file=$DISK1,format=raw,if=none,id=drive-ide0-1-0,cache=none,aio=native"
+fi
+if [ ! -z "$DISK2" ]; then
+QEMU_DISK="
+   $QEMU_DISK \
+   -device ide-hd,bus=ide.1,unit=1,drive=drive-ide0-1-1,id=ide0-1-1,write-cache=on \
+   -drive file=$DISK2,format=raw,if=none,id=drive-ide0-1-1,cache=none,aio=native"
+fi
+
+QEMU_NET="
+   -netdev bridge,id=hostnet0,br=qemubr0 -device $NET_DRIVE,netdev=hostnet0,id=net0,mac=52:54:00:cb:d5:c9,bus=pci.0,addr=0x3 \
+   -netdev bridge,id=hostnet1,br=qemubr1 -device $NET_DRIVE,netdev=hostnet1,id=net1,mac=52:54:00:07:2e:e4,bus=pci.0,addr=0x4 \
+   -netdev bridge,id=hostnet2,br=qemubr2 -device $NET_DRIVE,netdev=hostnet2,id=net2,mac=52:54:00:e0:09:6a,bus=pci.0,addr=0x2 "

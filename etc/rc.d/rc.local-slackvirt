@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# Initialization script for slackvirt
+# 
+# William PC Slack-iT Seattle 2019
+#
+
+LVMS="libvirt MEGALNX-HOME"
+VMS="megalnx-14.1"
+
+echo "
+#####################
+ Loading $0
+#####################" > /dev/console
+sh /root/sbin/intel-performance-state.sh performance
+
+if [ -x /usr/local/etc/rc.d/rc.cryptsetup ]; then
+  /usr/local/etc/rc.d/rc.cryptsetup start 
+fi
+
+if [ ! -z "$LVMS" ]; then
+  echo "##### LVM #####"
+  for lvm in $LVMS; do
+    vgchange -ay $lvm
+  done
+fi
+
+mount -a -T /usr/local/etc/fstab.extra
+
+if [ -x /usr/local/etc/rc.d/rc.qemubridge ]; then
+  echo "##### Setup QEMU Bridge #####"
+  /usr/local/etc/rc.d/rc.qemubridge start 
+fi
+
+echo "##### WIFI #####"
+WLANIF=wlan0
+if [ -x /usr/local/etc/rc.d/rc.wifi-ap ]; then
+   /usr/local/etc/rc.d/rc.wifi-ap start
+else
+   wpa_supplicant -Dnl80211 -i$WLANIF -c/usr/local/etc/wpa_supplicant.conf -B
+fi
+
+if [ -x /usr/local/etc/rc.d/rc.slackvirt ]; then
+  echo "##### SLACKVIRT #####"
+  /usr/local/etc/rc.d/rc.slackvirt start
+fi
+
+if [ -x /etc/rc.d/rc.libvirt ]; then
+  echo "##### LIBVIRT #####"
+  /etc/rc.d/rc.libvirt start
+  if [ ! -z "$VMS" ]; then
+  echo "##### Startup VMs #####"
+  sleep 1
+    for vm in $VMS; do
+      $(sleep 2 && virsh start $vm)
+    done
+  fi
+fi
+
+
+echo "##### iptables #####"
+sh /usr/local/sbin/iptables-br.sh start
+sh /usr/local/sbin/iptables-lxc.sh start
+sh /usr/local/sbin/iptables-wlan0_ap.sh start
+
+gkrellmd -m 2 -A 192.168.10.1 -d  
+
+
+# ssh after libvirt for bridge connection
+[ -x /usr/local/etc/rc.d/rc.sshd ] && /usr/local/etc/rc.d/rc.sshd start
+
+sh /root/sbin/intel-performance-state.sh powersave
+
+$(sleep 2 && chvt 2) &
+$(sleep 4 && chvt 3) &
+
+echo "\
+#####################
+ $(hostname) ready ! 
+#####################" > /dev/console

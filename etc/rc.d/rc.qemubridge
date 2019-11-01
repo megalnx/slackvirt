@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+#
+
+BRIDGE=eth0
+BRNAME=qemubr0
+IPQEMUBR0=192.168.10.1
+IPQEMUBR1=192.168.20.1
+IPQEMUBR2=192.168.30.1
+
+function qemubridge_up(){
+  ip link add link $BRIDGE name $BRNAME-nic type veth
+  brctl addbr $BRNAME
+  brctl addif $BRNAME $BRNAME-nic
+  ifconfig $BRNAME $IPQEMUBR0
+
+  brctl addbr qemubr1
+  ifconfig qemubr1 $IPQEMUBR1
+
+  brctl addbr qemubr2
+  ifconfig qemubr2 $IPQEMUBR2
+}
+
+function qemubridge_down(){
+  ifconfig qemubr1 down
+  brctl delbr qemubr1
+
+  ifconfig qemubr2 down
+  brctl delbr qemubr2
+
+  ifconfig $BRNAME down
+  brctl delif $BRNAME $BRNAME-nic
+  brctl delbr $BRNAME
+  ip link del $BRNAME-nic
+}
+
+case $1 in
+	start)
+	qemubridge_up
+	;;
+	stop)
+	qemubridge_down
+	;;
+	restart)
+	qemubridge_down
+	qemubridge_up
+	;;
+	status)
+	brctl show $BRNAME
+	;;
+	*)
+	ifconfig $BRNAME
+	;;
+esac

@@ -1,0 +1,12 @@
+
+# PCI device 0x8086:0x9df0 (iwlwifi)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="64:32:a8:7e:60:99", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0"
+
+# PCI device 0x8086:0x9df0 (iwlwifi)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="64:32:a8:7e:60:9a", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0-sta2"
+
+# PCI device 0x8086:0x9df0 (iwlwifi)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="64:32:a8:7e:60:9b", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0-sta3"
+
+# PCI device 0x8086:0x9df0 (iwlwifi)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="64:32:a8:7e:60:9c", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan0-sta4"

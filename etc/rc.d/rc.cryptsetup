@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+#
+#
+
+CRYPTTAB=/usr/local/etc/crypttab
+
+function open_crypt(){
+  cat $CRYPTTAB | grep -v "^#\|^$" | while read line; do
+    CMD=$(echo $line | awk '{print "cryptsetup luksOpen " "--type " $4 " --key-file=" $3 "  " $2 " " $1 }')
+    $CMD
+  done
+}
+
+function close_crypt(){
+  cat $CRYPTTAB | grep -v "^#\|^$" | while read line; do
+    CMD=$(echo $line | awk '{print "cryptsetup luksClose " $1 }')
+    $CMD
+  done
+}
+
+case $1 in
+	start)
+		open_crypt
+	;;
+	stop)
+		close_crypt
+	;;
+esac

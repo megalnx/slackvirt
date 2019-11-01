@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# Dual mode wireless configuration
+#
+# William PC, Seattle, 2019
+
+IWFACE=wlan0
+IFAPIP=192.168.77.1
+DHCPDPID=/var/run/dhcpd-hostapd.pid
+HOSTAP_BUILD=n
+IFW_sta=$IWFACE\-sta
+IFW_ap=$IWFACE\-ap
+
+function start(){
+  echo " -> Setup $IFW_sta and $IFW_ap"
+  /usr/sbin/iw dev $IWFACE interface add $IFW_sta type managed addr 6c:2b:59:41:19:1f
+  /usr/sbin/iw dev $IWFACE interface add $IFW_ap type managed addr  6c:2b:59:41:19:ac
+
+  iwconfig $IFW_sta power off
+  iwconfig $IFW_ap power off
+  echo 1 > /proc/sys/net/ipv6/conf/$IFW_ap/disable_ipv6
+  
+  sleep 1
+
+  echo " -> Configure $IFW_ap"
+  ifconfig $IFW_ap $IFAPIP
+
+  # HostAP daemon
+  cp -av /usr/local/etc/hostapd/hostapd-$HOSTAP_BUILD.conf /etc/hostapd/hostapd.conf
+  [ -x /etc/rc.d/rc.hostapd ] && /etc/rc.d/rc.hostapd start
+
+  sleep 2
+
+  # DHCP server at wireless ap interface
+  dhcpd -cf /usr/local/etc/dhcpd-hostap.conf -pf $DHCPDPID $IFW_ap
+#-m/usr/local/etc/wpa_supplicant-p2p.conf
+  wpa_supplicant -Dnl80211 -i$IFW_sta  -c/usr/local/etc/wpa_supplicant.conf -B
+
+  # notify messages
+  wpa_cli -a /usr/local/bin/wpa-notify -B
+
+  # enable socket over network
+  /usr/local/sbin/wpa_socket server
+}
+
+function stop(){
+  [ -f $DHCPDPID ] && kill $(cat $DHCPDPID)
+
+  [ -x /etc/rc.d/rc.hostapd ] && /etc/rc.d/rc.hostapd stop
+
+  pkill wpa_supplicant
+
+  /usr/sbin/iw $IFW_sta del
+  /usr/sbin/iw $IFW_ap del
+}
+
+case $1 in
+	stop)
+	stop
+	;;
+	start)
+	start
+	;;
+	restart)
+	stop; sleep 1;start
+	;;
+esac

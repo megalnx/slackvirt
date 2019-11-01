@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Creates wpa_supplicant socket
+
+WPA_SOCKET=/var/run/wpa_supplicant/wlan0-sta
+NETIP=192.168.10.1
+PORT=1234
+
+# PROTOCOL TCP4, OPENSSL, SCTP, UDP
+PROTOCOL=TCP4
+
+#ssh -L $SOCKET:$SOCKET root@192.168.20.1
+
+function server(){
+  pkill socat; sleep 1
+  # working - receiving commands from remote
+  socat -d -d $PROTOCOL-LISTEN:$PORT,bind=$NETIP,range=192.168.20.0/24 UNIX-CLIENT:$WPA_SOCKET &
+}
+
+function client(){
+  pkill socat; sleep 1
+  [ ! -d $(dirname $WPA_SOCKET) ] && mkdir $(dirname $WPA_SOCKET)
+
+  socat -d -d $PROTOCOL:$NETIP:$PORT UNIX-RECV:$WPA_SOCKET,mode=770,reuseaddr &
+}
+
+case $1 in
+	server|client)
+	$1
+	;;
+	stop)
+	pkill socat
+	;;
+	*)
+	echo "$0 server|client"
+	;;
+esac
+

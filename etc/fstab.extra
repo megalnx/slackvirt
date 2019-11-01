@@ -1,0 +1,3 @@
+/dev/mapper/libvirt-images 	 /media/hd0		auto	auto	       0   0
+/dev/sda2 	 		 /media/hd1		auto	ro,auto	       0   0
+

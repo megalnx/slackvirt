@@ -1,0 +1,56 @@
+MACHINE="-machine pc-q35-4.1"
+
+##########################
+
+QEMU_USB2="
+  -device ich9-usb-ehci1,id=usb \
+  -device ich9-usb-uhci1,masterbus=usb.0,firstport=0,multifunction=on \
+  -device ich9-usb-uhci2,masterbus=usb.0,firstport=2 \
+  -device ich9-usb-uhci3,masterbus=usb.0,firstport=4"
+
+
+QEMU_CONTROLLERS="
+  -device pcie-root-port,port=0x10,chassis=1,id=pci.0,bus=pcie.0,multifunction=on,addr=0x4 \
+  -device pcie-pci-bridge,id=pci.2,bus=pci.0,addr=0x0 \
+  -device pcie-root-port,port=0x11,chassis=3,id=pci.3,bus=pcie.0,addr=0x4.0x1 \
+  -device pcie-root-port,port=0x12,chassis=4,id=pci.4,bus=pcie.0,addr=0x4.0x2 \
+  -device pcie-root-port,port=0x13,chassis=5,id=pci.5,bus=pcie.0,addr=0x4.0x3 \
+  -device pcie-root-port,port=0x14,chassis=6,id=pci.6,bus=pcie.0,addr=0x4.0x4 \
+  $QEMU_USB2"
+
+QEMU_VIDEO="-vga std"
+
+QEMU_DISK0_NORMAL="
+  -device ide-hd,bus=ide.0,drive=drive-sata0-0-0,id=sata0-0-0,bootindex=2,write-cache=on \
+  -drive file=$DISK,format=raw,if=none,id=drive-sata0-0-0,cache=none,aio=native"
+
+QEMU_DISK0_VIRTIO="
+  -device virtio-blk-pci,scsi=off,bus=pci.0,addr=0x4,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=2,write-cache=on \
+  -drive file=$DISK,format=raw,if=none,id=drive-virtio-disk0,cache=none,aio=native"
+
+QEMU_DISK="
+  $QEMU_DISK0_NORMAL \
+  -device ide-cd,bus=ide.1,drive=drive-sata0-0-1,id=sata0-0-1,bootindex=1 \
+  -device ide-cd,bus=ide.2,drive=drive-sata0-0-2,id=sata0-0-2,bootindex=3 \
+  -device usb-storage,bus=usb.0,port=1,drive=drive-usb-disk0,id=usb-disk0,removable=off,write-cache=on \
+  -drive file=$MEDIA,format=raw,if=none,id=drive-sata0-0-1,readonly=on \
+  -drive file=$MEDIA2,format=raw,if=none,id=drive-sata0-0-2,readonly=on \
+  -drive file=$DATA,format=raw,if=none,id=drive-usb-disk0,readonly=off,cache=none,aio=native"
+
+
+QEMU_AUDIO="-soundhw ac97 \
+  -device intel-hda,id=sound0,bus=pci.2,addr=0x4 \
+  -device hda-duplex,id=sound0-codec0,bus=sound0.0,cad=0"
+
+QEMU_NET="
+  -netdev bridge,id=hostnet0,br=qemubr0 -device $NET_DRIVE,netdev=hostnet0,id=net0,mac=52:54:00:cb:d5:2b,bus=pci.2,addr=0x3"
+
+QEMU_SPICE="
+  $SPICE_USB_REDIR \
+  -chardev spicevmc,id=charchannel1,name=vdagent \
+  -spice port=5905,addr=192.168.20.1,disable-ticketing,image-compression=auto_lz,seamless-migration=on"
+
+QEMU_EXTRA="
+  -boot menu=on,strict=on \
+  -msg timestamp=on \
+  $QEMU_USB_REDIR"

@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+
+#VMS="megalnx babylon"
+VMS="Win10-32bit"
+LVMS="libvirt MEGALNX-HOME"
+
+echo " Sent shutdown to VMs"
+for vm in $VMS; do
+  /usr/sbin/virsh shutdown $vm
+done
+
+# Wifi network setup
+# first with a hack to Slackware inet1 using
+# a custom /etc/rc.d/rc.inet1.
+# otherwise use a custom wireless network setup script
+
+if [ -x /usr/local/etc/rc.d/rc.local-wireless ]; then
+  /usr/local/etc/rc.d/rc.local-wireless stop
+elif [ -x /usr/local/etc/rc.d/rc.wifi-ap ]; then
+  /usr/local/etc/rc.d/rc.wifi-ap stop
+fi
+
+[ -x /etc/rc.d/rc.libvirt ] && /etc/rc.d/libvirt stop
+
+if [ -x /usr/local/etc/rc.d/rc.slackvirt ]; then
+  /usr/local/etc/rc.d/rc.slackvirt stop
+fi
+
+echo "##### NET #####"
+if [ -x /usr/local/etc/rc.d/rc.lxcbridge ]; then
+  /usr/local/etc/rc.d/rc.lxcbridge stop
+fi
+
+umount /media/hd0
+umount /media/hd1
+
+echo " Disabling LVMs..."
+for lvm in $LVMS; do
+  vgchange -an $lvm
+done
+
+#find /usr/local -iname "*~" -exec rm {} \;
+
+if [ -x /usr/local/etc/rc.d/rc.cryptsetup ]; then
+  /usr/local/etc/rc.d/rc.cryptsetup stop
+fi
+
+

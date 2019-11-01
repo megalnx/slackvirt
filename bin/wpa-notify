@@ -1,0 +1,12 @@
+#!/bin/bash
+
+case "$2" in
+	CONNECTED)
+	  DISPLAY=:0.0 notify-send "WPA supplicant:" "$1 connected";
+#	  tmux display-message '$1 connected'
+	;;
+	DISCONNECTED)
+	  DISPLAY=:0.0 notify-send "WPA supplicant:" "$1 disconnected";
+#	  tmux display-message '$1 disconnected'
+	;;
+esac

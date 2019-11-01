@@ -1,0 +1,70 @@
+#!/bin/bash
+
+CLIENT=wpa_gui
+CTRL_SOCKET=/tmp/wpa_ctrl
+SERVER_IP=192.168.10.1
+CLIENT_IP=192.168.10.3
+
+PROTOCOL=TCP4
+
+function server(){
+  # wait connection from client
+  socat -d -d $PROTOCOL-LISTEN:7767,bind=$SERVER_IP,reuseaddr,crlf SYSTEM:'/usr/local/sbin/wpa_ctrl_socket client_reply' &
+}
+
+function client(){
+  pkill $CLIENT; sleep 1
+  rm $CTRL_SOCKET*
+  $CLIENT &
+
+  socat -d -d $PROTOCOL-LISTEN:7768,bind=$CLIENT_IP,reuseaddr,crlf SYSTEM:'/usr/local/sbin/wpa_ctrl_socket server_reply' &
+
+  CLIENT_PID=$(pgrep $CLIENT)
+  echo "Client $CLIENT : $CLIENT_PID"
+
+  CTRL_SOCKET_0=$CTRL_SOCKET\_$CLIENT_PID-1
+  CTRL_SOCKET_1=$CTRL_SOCKET\_$CLIENT_PID-2
+
+  sleep 0.5
+
+  socat -d -d $PROTOCOL-LISTEN:2345,bind=$CLIENT_IP UNIX-CLIENT:$CTRL_SOCKET_0 &
+  socat -d -d $PROTOCOL-LISTEN:3456,bind=$CLIENT_IP UNIX-CLIENT:$CTRL_SOCKET_1 &
+#  ps ax | grep socat
+  echo "$CLIENT_PID" | socat -t 4 $PROTOCOL:$SERVER_IP:7767 -
+
+  sleep 300
+  rm $CTRL_SOCKET_0 $CTRL_SOCKET_1
+}
+
+function server_reply(){
+  read CLIENT_PID
+  echo "Client PID: $CLIENT_PID"
+
+  CTRL_SOCKET_0=/tmp/wpa_ctrl\_$CLIENT_PID-1
+  CTRL_SOCKET_1=/tmp/wpa_ctrl\_$CLIENT_PID-2
+
+  echo "$CLIENT_PID" | socat -t 4 $PROTOCOL:$CLIENT_IP:7768 -
+}
+
+function client_reply(){
+  read CLIENT_PID
+  echo "Client PID: $CLIENT_PID"
+
+  CTRL_SOCKET_0=/tmp/wpa_ctrl\_$CLIENT_PID-1
+  CTRL_SOCKET_1=/tmp/wpa_ctrl\_$CLIENT_PID-2
+
+ # echo "$CLIENT_PID" | socat -t 4 $PROTOCOL:$CLIENT_IP:7768 -
+#  sleep 1
+  socat -d -d $PROTOCOL:$CLIENT_IP:2345 UNIX-RECV:$CTRL_SOCKET_0,mode=755 &
+  socat -d -d $PROTOCOL:$CLIENT_IP:3456 UNIX-CONNECT:$CTRL_SOCKET_1,mode=755 &
+}
+
+function local_test_server(){
+  socat -d -d $PROTOCOL-LISTEN:7767,bind=$NETIP,reuseaddr,fork,crlf SYSTEM:'read MESSAGE; echo host\:\$(hostname)\ socat_pid\:$SOCAT_PPID - $SOCAT_PID \: $MESSAGE' |grep SOCAT;  exit
+}
+
+function local_test_client(){
+  socat TCP-CONNECT:$NETIP:7767 - 
+}
+
+$1

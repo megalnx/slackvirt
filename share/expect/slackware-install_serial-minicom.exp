@@ -1,0 +1,19 @@
+
+
+sleep 1.2
+
+spawn qemu-system-x86_64 -m 2G 
+
+# boot with serial console
+send "huge.s console=ttyS0"
+
+expect { 
+  -re "Enter 1 to select a keyboard map: " {sleep 0.8 ; send "\r" ; exp_continue}
+  -re "Slackware login: " {sleep 0.8 ; send "\r"}
+}
+
+expect {
+  -re "root@slackware:/#" {sleep 0.8 ; send "mount /dev/sr0 /var/log/mount"; exp_continue}
+  -re "root@slackware:/#" {sleep 0.8 ; send "slackinstall --prompmode terse"
+}
+

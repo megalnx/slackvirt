@@ -1,0 +1,91 @@
+#!/usr/bin/expect -f
+
+set SLACKWARE_ARCH "slackware64"
+set MEDIA "/media/hd1/MIRROR/slackware-iso/slackware64-14.2-iso/slackware64-14.2-install-dvd.iso"
+set PKG_SERIES "a#"
+
+set INSTALL_BOOT_CMD "huge.s console=ttyS0\r"
+set SELECT_MEDIA "mount /dev/sr0 /var/log/mount\r"
+set MOUNT_DISK "mount /dev/sda1 /mnt\r"
+
+set SLACKINSTALL_CMD "slackinstall --promptmode terse \
+	--srcpath /var/log/mount/$SLACKWARE_ARCH \
+	--target /mnt \
+	--device /drv/sr0 \
+	--series $PKG_SERIES\r" 
+
+set install_mode [ lindex $argv 0 ]
+#log_user 1
+set timeout -1
+
+# Start VM server - no video (curses or nographic)
+proc start_vm { MEDIA mode } {
+if { $mode == "curses" } {
+  spawn qemu-system-x86_64 -enable-kvm -m 2G -cdrom $MEDIA -boot d -curses
+} elseif { $mode == "pipe" } {
+#  spawn qemu-system-x86_64 -enable-kvm -m 2G -cdrom $MEDIA -boot d -nographic -serial pipe:/tmp/guest
+  spawn cat "/tmp/guest.out" ; set output_id $spawn_id
+} elseif { $mode == "serial" } {
+  spawn qemu-system-x86_64 -enable-kvm -m 2G -cdrom $MEDIA -boot d -nographic \
+    -chardev socket,id=monitor,path=/tmp/monitor.sock,server,nowait -monitor chardev:monitor \
+    -chardev socket,id=serial0,path=/tmp/console.sock,server,nowait -serial chardev:serial0
+  spawn minicom "-D unix\#/tmp/console.sock" ; set output_id $spawn_id
+}
+}
+ 
+proc shutdown_vm { output_id input_id } {
+  expect {
+    -i $output_id "root@slackware:/#" {sleep 1 ; set send_cmd [ send_cmd "poweroff\r" ]; exp_continue}
+    -i $output_id -re "reboot: Power down" {sleep 2}
+  }
+}
+
+# Boot
+proc boot { INSTALL_BOOT_CMD } {
+  expect {
+    "Booting from DVD/CD..."  {sleep 0.4 ; exp_continue}
+    "\nboot: " {sleep 1.2 ; set send_cmd [ send_cmd $INSTALL_BOOT_CMD ]; exp_continue}
+    -re "^Loding /kernels/huge.s/bzImage..*" exp_continue
+  }
+}
+
+# Boot pipe
+proc slackware_boot { mode output_id input_id INSTALL_BOOT_CMD } {
+  expect {
+#    if { $mode == "pipe" } {
+      -i $output_id "Booting from DVD/CD..." {sleep 0.4 ; exp_continue}
+      -i $output_id -ex "\nboot: " {sleep 0.8 ; set send_cmd [ send_cmd $INSTALL_BOOT_CMD ]; exp_continue}
+#    } elseif { $mode != "pipe" } {
+      -i $output_id -ex "\nboot: " {sleep 0.8 ; puts -i $output_id $INSTALL_BOOT_CMD ]; exp_continue}
+      -i $output_id -ex "Enter 1 to select a keyboard map: " {sleep 0.8 ; set send_cmd [ send_cmd "\r" ]; exp_continue}
+      -i $output_id -ex "slackware login:" {sleep 0.8 ; set send_cmd [ send_cmd "\r"]}
+#    }
+  }
+}
+
+proc mount_media { output_id input_id SELECT_MEDIA } {
+  expect -i $output_id "root@slackware:/#"
+  sleep 0.8 ; set send_cmd [ send_cmd $SELECT_MEDIA ]
+}
+
+proc mount_disk { output_id input_id MOUNT_DISK } {
+  expect -i $output_id "root@slackware:/#"
+  sleep 0.8 ; set send_cmd [ send_cmd $MOUNT_DISK ]
+}
+
+proc slackware_install { output_id input_id SLACKINSTALL_CMD } {
+  expect -i $output_id "root@slackware:/#" 
+  sleep 0.8 ; set send_cmd [ send_cmd $SLACKINSTALL_CMD ]
+}
+
+proc send_cmd { cmd } {
+#  spawn puts $cmd $devto ; set input_id $spawn_id
+  spawn -noecho /usr/local/bin/sendguest.sh $cmd ; set input_id $spawn_id
+}
+
+set output_id [ start_vm $MEDIA $install_mode ]
+set slackware_boot [ slackware_boot $install_mode $output_id "" $INSTALL_BOOT_CMD ]
+set mount_media [ mount_media $output_id "" $SELECT_MEDIA ]
+set slackware_install [ slackware_install $output_id "" $SLACKINSTALL_CMD ]
+set shutdown_vm [ shutdown_vm $output_id "" ]
+

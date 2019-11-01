@@ -1,0 +1,4 @@
+sda1_crypt		/dev/sda1	/root/keyfile-DELL-5480.key     luks
+sda3_crypt		/dev/sda3	/root/keyfile-DELL-5480.key     luks
+#sda4_crypt		/dev/sda4	/root/keyfile-DELL-5480.key     luks
+#sda5_crypt		/dev/sda5	/root/keyfile-DELL-5480.key     luks

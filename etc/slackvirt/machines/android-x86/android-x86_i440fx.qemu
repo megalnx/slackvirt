@@ -1,0 +1,43 @@
+MACHINE="-machine pc-i440fx-4.1"
+
+##########################
+
+QEMU_USB2="
+  -device ich9-usb-ehci1,id=usb,bus=pci.0,addr=0x5.0x7 \
+  -device ich9-usb-uhci1,masterbus=usb.0,firstport=0,bus=pci.0,multifunction=on,addr=0x5 \
+  -device ich9-usb-uhci2,masterbus=usb.0,firstport=2,bus=pci.0,addr=0x5.0x1 \
+  -device ich9-usb-uhci3,masterbus=usb.0,firstport=4,bus=pci.0,addr=0x5.0x2"
+#  -device ich9-usb-ehci1,id=usb \
+#  -device ich9-usb-uhci1,masterbus=usb.0,firstport=0,multifunction=on \
+#  -device ich9-usb-uhci2,masterbus=usb.0,firstport=2 \
+#  -device ich9-usb-uhci3,masterbus=usb.0,firstport=4"
+
+QEMU_CONTROLLERS="
+  -device ahci,id=sata0,bus=pci.0,addr=0x8 \
+  $QEMU_USB2"
+
+QEMU_VIDEO="-vga std"
+
+QEMU_DISK="
+  -device ide-hd,bus=sata0.0,drive=drive-sata0-0-0,id=sata0-0-0,bootindex=2,write-cache=on \
+  -device ide-cd,bus=ide.1,drive=drive-sata0-0-1,id=sata0-0-1,bootindex=1 \
+  -device ide-cd,bus=ide.1,drive=drive-sata0-0-2,id=sata0-0-2,bootindex=3 \
+  -device usb-storage,bus=usb.0,port=1,drive=drive-usb-disk0,id=usb-disk0,removable=off,write-cache=on \
+  -drive file=$DISK,format=raw,if=none,id=drive-sata0-0-0,cache=none,aio=native \
+  -drive file=$MEDIA,format=raw,if=none,id=drive-sata0-0-1,readonly=on \
+  -drive file=$MEDIA2,format=raw,if=none,id=drive-sata0-0-2,readonly=on \
+  -drive file=$DATA,format=raw,if=none,id=drive-usb-disk0,readonly=off,cache=none,aio=native"
+
+
+QEMU_AUDIO="
+  -device intel-hda,id=sound0,bus=pci.0,addr=0x4 \
+  -device hda-duplex,id=sound0-codec0,bus=sound0.0,cad=0"
+
+QEMU_NET="
+  -netdev bridge,id=hostnet0,br=qemubr0 -device $NET_DRIVE,netdev=hostnet0,id=net0,mac=52:54:00:cb:d5:2b,bus=pci.0,addr=0x3"
+
+QEMU_EXTRA="
+  -boot menu=on,strict=on \
+  $QEMU_USB_REDIR \
+  -msg timestamp=on"
+

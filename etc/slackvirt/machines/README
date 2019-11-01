@@ -1,0 +1,10 @@
+Default setup for qemu
+
+- i440fx & q35, default machine configurating files
+- slackware, configuration for Slackware machines
+- android-x86, configuration files for Android-x86
+
+By defaults i440fx & 135 machines setup the following resources:
+ - Creates to sockets /tmp/$VMNAME-monitor.sock and /tmp/$VMNAME-console.sock.
+ - Default video is vmware
+ - Default audio Intel HD

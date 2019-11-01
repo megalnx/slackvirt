@@ -1,0 +1,14 @@
+PARTUUID="5d24a228-d239-480c-aff1-354aaf5d39cd"        /                ext4        defaults         1   1
+PARTUUID="a0d6ffcd-10f5-4f47-9e50-1901ae7654b9"        /boot/efi        vfat        noauto,noatime,defaults         1   0
+#/dev/cdrom      /mnt/cdrom       auto        noauto,owner,ro,comment=x-gvfs-show 0   0
+/dev/fd0         /mnt/floppy      auto        noauto,owner     0   0
+devpts           /dev/pts         devpts      gid=5,mode=620   0   0
+proc             /proc            proc        defaults         0   0
+tmpfs            /dev/shm         tmpfs       defaults         0   0
+
+
+mnt_tmp 	 	/tmp		tmpfs	size=512M,auto	       0   0
+
+#/dev/sdb7: UUID="49e51c66-c548-46f6-b7a8-9d779fa9725d" TYPE="ext4" PARTLABEL="Linux" PARTUUID="00574a28-e521-459e-ac65-491f6d5238c2"
+#/dev/sdb7: UUID="49e51c66-c548-46f6-b7a8-9d779fa9725d" TYPE="ext4" PARTUUID="5d24a228-d239-480c-aff1-354aaf5d39cd"
+#/dev/sdc3: UUID="a89059c4-13b4-4ee8-ae53-219d756130a2" TYPE="ext4" PARTLABEL="Slackware Linux" PARTUUID="8b318c1a-ef41-4512-9ba4-6ad4f933d6d1"

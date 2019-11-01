@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# slackvirt fluxbox startup-script
+#
+
+if [ "$DISPLAY" == ":0" ]; then
+  xrandr --dpi 122 & sleep 1
+  xterm -geometry 80x24+0+180 & sleep 1
+  if [ -x /etc/rc.d/rc.libvirt ]; then 
+    sleep 1 && virt-manager &
+  else 
+    sleep 1 && xterm -geometry 152x38+487+0 &
+  fi
+  ~/bin/gkrellms-split.sh start &
+  XTERMSIZE=80x24
+  $(sleep 4 && wpa_gui -t) &
+#  $(sleep 4 && xfce4-power-manager) &
+  sleep 1 && sh ~/bin/xterm-console-minicom.sh /tmp/server-console.sock "-geometry $XTERMSIZE+459+526" &
+#  sleep 1 && sh ~/bin/xterm-console-minicom.sh /tmp/server-monitor.sock "-geometry $XTERMSIZE" &
+  XTERM_FONT=""
+  XTERM_FSIZE="6"
+  W_NOTEMON_GEOM=30x88+8+842
+  W_QEMULS_GEOM=26x6+12+720
+  W_PING_GEOM=30x6+8+560
+  sleep 4 && sh ~/bin/xterm-console-minicom.sh /tmp/desktop-console.sock "-geometry $XTERMSIZE+945+526" &
+#  sleep 4 && sh ~/bin/xterm-console-minicom.sh /tmp/desktop-monitor.sock "-geometry $XTERMSIZE" &
+  sleep 7 && sh ~/bin/xterm-console-minicom.sh /tmp/desktop-ttyS1.sock "-geometry $XTERMSIZE" &
+  sleep 1 && xterm -T "notemon" -fg '#fff' -bg '#000' $XTERM_FONT -fs $XTERM_FSIZE -geometry $W_NOTEMON_GEOM -e "watch -tn4 notemon" &
+  $(sleep 16 && sh ~/sbin/xnested.sh) &
+else
+  xrandr --dpi 96 & sleep 1
+  xterm -geometry 56x20+0+180 & sleep 1
+  gkrellm -nc &
+  XTERMSIZE=56x20
+  XTERM_FONT="-fa "DejaVu\Sans\Mono""
+  XTERM_FSIZE="6"
+  W_NOTEMON_GEOM=220x120+8+720
+  W_QEMULS_GEOM=28x10+12+402
+  W_PING_GEOM=30x4+8+840
+fi
+
+sleep 1 && xterm -T "qemu ls" -fg '#fff' -bg '#000' $XTERM_FONT -fs $XTERM_FSIZE -geometry $W_QEMULS_GEOM -e "watch -tn4 slackware-qemu-vmserver.sh list" &
+sleep 1 && xterm -T "ping" -fg '#fff' -bg '#000' $XTERM_FONT -fs $XTERM_FSIZE -geometry $W_PING_GEOM -e "watch -tn4 ping-monitor.sh" &
+sleep 1 && xterm -T "dialog-ctrl" -fg '#fff' -bg '#000' -geometry 34x12+210+800 -e "dialog-ctrl.sh" &
+

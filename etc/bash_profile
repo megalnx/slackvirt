@@ -1,0 +1,29 @@
+PATH=$PATH:$HOME/sbin
+
+du -chd0 /root /usr/local
+tmux list-sessions
+
+if [ "$(fgconsole)" == "3" ]; then
+  export PS1="\u@\h-tty3:\w\$ "
+elif [ "$(fgconsole)" == "4" ]; then
+  export PS1="\u@\h-tty4:\w\$ "
+  SNAME="tty4.megadell"
+  echo "Loading screen..."; sleep 1
+  screen -ls $SNAME | grep $SNAME
+  if [ "$?"  == "1" ]; then
+    screen -dmS "$SNAME"
+  fi
+  screen -r "$SNAME" -p 1
+elif [ "$(fgconsole)" == "5" ]; then
+  export PS1="\u@\h-tty5:\w\$ "
+  SNAME="sys-mon"
+  echo "Loading tmux session..." 
+  tmux list-sessions | grep $SNAME
+  if [ "$?"  == "1" ]; then
+    $(sleep 1.2 && slackvirtmon-tmux.sh)
+  fi
+  tmux attach-session -t $SNAME
+elif [ "$(fgconsole)" == "6" ]; then
+  startx
+fi
+

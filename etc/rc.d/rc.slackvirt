@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+#
+#
+# William PC (Slack-iT), Seattle US 2019
+
+VMS_PATH=/usr/local/etc/slackvirt
+SERVER=$VMS_PATH/server.qemu
+DESKTOP=$VMS_PATH/desktop-i440fx.qemu
+
+for pid in $(pgrep -f "xterm -T *.*-monitor.sock"); do
+  kill $pid; sleep 1
+done
+
+case $1 in 
+	start)
+	/usr/local/sbin/slackware-qemu-vmserver.sh start $SERVER
+	/usr/local/sbin/slackware-qemu-vmserver.sh start $DESKTOP
+	;;
+	stop)
+	/usr/local/sbin/slackware-qemu-vmserver.sh stop $DESKTOP
+	/usr/local/sbin/slackware-qemu-vmserver.sh stop $SERVER
+	;;
+	pause)
+	ACPI_CMD="stop\r"
+	/usr/local/sbin/slackware-qemu-vmserver.sh pause $DESKTOP
+	/usr/local/sbin/slackware-qemu-vmserver.sh pause $SERVER
+	;;
+	resume)
+	ACPI_CMD="cont\r"
+	/usr/local/sbin/slackware-qemu-vmserver.sh resume $DESKTOP
+	/usr/local/sbin/slackware-qemu-vmserver.sh resume $SERVER
+	;;
+	reboot)
+	ACPI_CMD="system_reset\r"
+	;;
+	status)
+	/usr/local/sbin/slackware-qemu-vmserver.sh list
+	;;
+	*)
+	echo "$0 start|stop|status|pause|resume|reboot"
+	;;
+esac
+#  	*)
+#	ACPI_CMD="system_powerdown\r"
+#	;;
+
+
