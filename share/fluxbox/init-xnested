@@ -69,7 +69,7 @@ session.colorsPerChannel:	4
 session.forcePseudoTransparency:	true
 session.slitlistFile:	/root/.fluxbox/slitlist
 session.doubleClickInterval:	250
-session.keyFile:	~/.fluxbox/keys
+session.keyFile:	/usr/local/share/fluxbox/keys-xnested
 session.tabPadding:	0
 session.menuSearch:	itemstart
 session.ignoreBorder:	false

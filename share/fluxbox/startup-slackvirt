@@ -9,24 +9,24 @@ if [ "$DISPLAY" == ":0" ]; then
   if [ -x /etc/rc.d/rc.libvirt ]; then 
     sleep 1 && virt-manager &
   else 
-    sleep 1 && xterm -geometry 152x38+487+0 &
+    sleep 1 && xterm -geometry 152x38+487+0 -e "slackvirtmon-tmux.sh" &
   fi
-  ~/bin/gkrellms-split.sh start &
+  ~/usr/bin/gkrellms-split.sh start &
   XTERMSIZE=80x24
   $(sleep 4 && wpa_gui -t) &
 #  $(sleep 4 && xfce4-power-manager) &
-  sleep 1 && sh ~/bin/xterm-console-minicom.sh /tmp/server-console.sock "-geometry $XTERMSIZE+459+526" &
+  sleep 1 && sh ~/usr/bin/xterm-console-minicom.sh /tmp/server-console.sock "-geometry $XTERMSIZE+459+526" &
 #  sleep 1 && sh ~/bin/xterm-console-minicom.sh /tmp/server-monitor.sock "-geometry $XTERMSIZE" &
   XTERM_FONT=""
   XTERM_FSIZE="6"
-  W_NOTEMON_GEOM=30x88+8+842
-  W_QEMULS_GEOM=26x6+12+720
+  W_NOTEMON_GEOM=30x88+8+848
+  W_QEMULS_GEOM=28x6+12+720
   W_PING_GEOM=30x6+8+560
-  sleep 4 && sh ~/bin/xterm-console-minicom.sh /tmp/desktop-console.sock "-geometry $XTERMSIZE+945+526" &
+  sleep 4 && sh ~/usr/bin/xterm-console-minicom.sh /tmp/desktop-console.sock "-geometry $XTERMSIZE+945+526" &
 #  sleep 4 && sh ~/bin/xterm-console-minicom.sh /tmp/desktop-monitor.sock "-geometry $XTERMSIZE" &
-  sleep 7 && sh ~/bin/xterm-console-minicom.sh /tmp/desktop-ttyS1.sock "-geometry $XTERMSIZE" &
+  sleep 8 && sh ~/usr/bin/xterm-console-minicom.sh /tmp/desktop-ttyS1.sock "-geometry $XTERMSIZE" &
   sleep 1 && xterm -T "notemon" -fg '#fff' -bg '#000' $XTERM_FONT -fs $XTERM_FSIZE -geometry $W_NOTEMON_GEOM -e "watch -tn4 notemon" &
-  $(sleep 16 && sh ~/sbin/xnested.sh) &
+  $(sleep 15 && sh ~/usr/sbin/xnested.sh) &
 else
   xrandr --dpi 96 & sleep 1
   xterm -geometry 56x20+0+180 & sleep 1

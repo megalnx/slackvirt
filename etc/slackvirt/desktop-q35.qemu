@@ -3,12 +3,11 @@ SLACKWARE_VERSION=14.1
 SLACKWARE_ARCH=slackware
 CDROM=/media/hd1/MIRROR/slackware-iso
 DISK0=/dev/libvirt/megalnxvm
+#DISK0=/dev/libvirt/megalnx-142-vm
 DISK1=/dev/MEGALNX-HOME/HOME
 MEDIA=$CDROM/$SLACKWARE_ARCH-$SLACKWARE_VERSION-iso/$SLACKWARE_ARCH-$SLACKWARE_VERSION-install-dvd.iso
-#CPU="-cpu host -smp 4,sockets=1,cores=2,threads=2"
 CPU="-cpu Skylake-Client-IBRS,ss=on,hypervisor=on,tsc_adjust=on,clflushopt=on,ssbd=on,xsaves=on,pdpe1gb=on,hle=off,rtm=off \
--smp 4,sockets=1,cores=2,threads=2"
-MACHINE="-machine pc-q35-4.1"
+-smp 4,sockets=1,cores=2,threads=2,maxcpus=6"
 MEMORY=4G
 #NET_DRIVE :- e1000, rtl8139, virtio-net
 NET_DRIVE="virtio-net" 
@@ -20,7 +19,7 @@ source /usr/local/etc/slackvirt/machines/q35/default
 
 QEMU_VIDEO="
   $QEMU_VIDEO \
-  -device qxl,id=video1,ram_size=67108864,vram_size=67108864,vram64_size_mb=0,vgamem_mb=16,max_outputs=1,bus=pcie.0,addr=0xb"
+  -device qxl,id=video1,ram_size=67108864,vram_size=67108864,vram64_size_mb=0,vgamem_mb=32,max_outputs=1,bus=pcie.0,addr=0xb"
 
 QEMU_DISK0_NORMAL="
   -device ide-hd,bus=ide.0,drive=drive-sata0-0-0,id=sata0-0-0,bootindex=1,write-cache=on \
@@ -47,9 +46,9 @@ QEMU_NET="
 QEMU_MOUSE="
   -device usb-tablet,id=input1,bus=usb0.0,port=1"
 
-QEMU_USB_REDIR="
-  -device usb-host,hostbus=1,hostaddr=4,id=hostdev0,bus=usb0.0,port=2 \
-  -device usb-host,hostbus=1,hostaddr=3,id=hostdev1,bus=usb0.0,port=3"
+#QEMU_USB_REDIR="
+#  -device usb-host,hostbus=1,hostaddr=4,id=hostdev0,bus=usb0.0,port=2 \
+#  -device usb-host,hostbus=1,hostaddr=3,id=hostdev1,bus=usb0.0,port=3"
 
 QEMU_USB2="
   -device ich9-usb-ehci1,id=usb \

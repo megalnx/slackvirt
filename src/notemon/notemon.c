@@ -141,8 +141,6 @@ int cpu_mon(){
   fclose(fptr);
   fan_rpm = atoi(che);
 
-
-
   printf("FAN rpm: %d\n", fan_rpm);
  
 }

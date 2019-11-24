@@ -3,6 +3,7 @@
 # Dialog control
 #
 # William PC Slack-iT Seattle 2019
+#
 
 BRIGHTNESS_CTR=/sys/class/backlight/intel_backlight/brightness
 MAX_BRIGHTNESS=$(cat /sys/class/backlight/intel_backlight/max_brightness)
@@ -16,15 +17,16 @@ DIALOG=dialog
 function pa_control(){
 while true; do
   NOW_VOLUME=$(pamixer --get-volume)
-  $DIALOG --rangebox "Pulseadio volume" 2 32 $STEP_VOLUME $MAX_VOLUME $NOW_VOLUME 2> /tmp/pavolume
+  $DIALOG --rangebox "Pulseadio volume" 2 32 $STEP_VOLUME $MAX_VOLUME $NOW_VOLUME 2> /tmp/dialog-ctl_pavolume
   [ "$?" == 1 ] && break
-  pamixer --set-volume $(cat /tmp/pavolume)
+  pamixer --set-volume $(cat /tmp/dialog-ctl_pavolume)
   sleep 0.2
 done
 }
  
 function rf_control(){
 IWFACES=$(rfkill list | grep -o "^[0-9]:")
+RFLIST=""
 while true; do
   for rif in $IWFACES; do
     dev=$(rfkill list $rif | head -n1 | awk -F ": " '{print $1":"$2}')
@@ -32,13 +34,13 @@ while true; do
     dev_status="$(rfkill list $rif | head -n2 | awk -F ":" '{print $2}' | tail -n1 | sed 's/no/on/g' | sed 's/yes/off/g' )"
     RFLIST+="\"$dev\" \"$dev_name\" $dev_status "
   done
-  eval "$DIALOG --checklist \"Radio control\" 20 46 5 $RFLIST 2> /tmp/radioctl"
+  eval "$DIALOG --checklist \"Radio control\" 20 46 5 $RFLIST 2> /tmp/dialog-ctl_radioctl"
   [ "$?" == 1 ] && break
+  cat /tmp/dialog-ctl_radioctl
   RFLIST=""
-  for dev in $(cat /tmp/radioctl); do
-    rfkill unblock $dev
-    echo  toogle-wifi.sh $dev
-    sleep 2
+  for dev in $(cat /tmp/dialog-ctl_radioctl); do
+     toogle-wifi.sh $dev
+     sleep 1.2
   done
 done
 #  echo " "; rfkill list | dialog --programbox "rfkill list" 18 40 
@@ -47,9 +49,9 @@ done
 function brightness_control(){
 while true; do
   NOW_BRIGHTNESS=$(cat /sys/class/backlight/intel_backlight/actual_brightness)
-  $DIALOG --rangebox "Display brightness" 2 32 400 $MAX_BRIGHTNESS $NOW_BRIGHTNESS 2> /tmp/brightness
+  $DIALOG --rangebox "Display brightness" 2 32 400 $MAX_BRIGHTNESS $NOW_BRIGHTNESS 2> /tmp/dialog-ctl_brightness
   [ "$?" == 1 ] && break
-  echo $(cat /tmp/brightness) > $BRIGHTNESS_CTR
+  echo $(cat /tmp/dialog-ctl_brightness) > $BRIGHTNESS_CTR
   sleep 0.3
 done
 }

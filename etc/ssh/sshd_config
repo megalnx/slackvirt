@@ -24,13 +24,14 @@ ListenAddress 192.168.20.1
 #RekeyLimit default none
 
 # Logging
-#SyslogFacility AUTH
-#LogLevel INFO
+SyslogFacility AUTH
+LogLevel INFO
 
 # Authentication:
 
 #LoginGraceTime 2m
 #PermitRootLogin prohibit-password
+
 #StrictModes yes
 #MaxAuthTries 6
 #MaxSessions 10
@@ -99,7 +100,7 @@ AuthorizedKeysFile	.ssh/authorized_keys
 #ClientAliveInterval 0
 #ClientAliveCountMax 3
 #UseDNS no
-#PidFile /var/run/sshd.pid
+PidFile /var/run/sshd.pid
 #MaxStartups 10:30:100
 #PermitTunnel no
 #ChrootDirectory none
@@ -113,6 +114,13 @@ Subsystem	sftp	/usr/libexec/sftp-server
 
 # Example of overriding settings on a per-user basis
 #Match User anoncvs
+#	X11Forwarding no
+#	AllowTcpForwarding no
+#	PermitTTY no
+#	ForceCommand cvs server
+
+Match Host 192.168.77.20
+	PermitRootLogin yes
 #	X11Forwarding no
 #	AllowTcpForwarding no
 #	PermitTTY no

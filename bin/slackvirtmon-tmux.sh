@@ -27,6 +27,13 @@ tmux split-window -v 'watch -n 4 /usr/local/bin/hw-sys-mon.sh battery'
 tmux selectp -t 0
 }
 
+TMUX_SESSION=$(tmux ls)
+if [ "$TMUX_SESSION" == "no server running" ]; then
+  echo yes
+else 
+  tmux attach-session -t sys-mon
+fi
+
 #down
 up
 

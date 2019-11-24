@@ -3,11 +3,14 @@ SLACKWARE_VERSION=14.1
 SLACKWARE_ARCH=slackware
 CDROM=/media/hd1/MIRROR/slackware-iso
 DISK0=/dev/libvirt/megalnxvm
-DISK1=/dev/MEGALNX-HOME/HOME
+#DISK0=/dev/libvirt/megalnx-142-vm
+DISK1=/dev/libvirt/desktop-usrlocal
+#DISK2=/dev/MEGALNX-HOME/HOME
+
 MEDIA=$CDROM/$SLACKWARE_ARCH-$SLACKWARE_VERSION-iso/$SLACKWARE_ARCH-$SLACKWARE_VERSION-install-dvd.iso
-CPU="-cpu Skylake-Client-IBRS,ss=on,hypervisor=on,tsc_adjust=on,clflushopt=on,ssbd=on,xsaves=on,pdpe1gb=on,hle=off,rtm=off \
--smp 4,sockets=1,cores=2,threads=2"
-MACHINE="-machine pc-i440fx-4.1"
+CPU="-cpu Skylake-Client-IBRS,ss=on,hypervisor=on,tsc_adjust=on,clflushopt=on,ssbd=on,xsaves=on,pdpe1gb=on,hle=off,rtm=off"
+
+SMP="-smp $(expr $(nproc) / 2),maxcpus=$(nproc --ignore=2),sockets=1,cores=$(expr $(nproc) / 2),threads=1"
 MEMORY=4G
 #NET_DRIVE :- e1000, rtl8139, virtio-net
 NET_DRIVE="virtio-net" 
@@ -19,7 +22,7 @@ source /usr/local/etc/slackvirt/machines/i440fx/default
 
 QEMU_VIDEO="
   $QEMU_VIDEO \
-  -device qxl,id=video1,ram_size=67108864,vram_size=67108864,vram64_size_mb=0,vgamem_mb=16,max_outputs=1,bus=pci.0,addr=0xb"
+  -device qxl,id=video1,ram_size=67108864,vram_size=67108864,vram64_size_mb=0,vgamem_mb=32,max_outputs=1,bus=pci.0,addr=0xb"
 
 QEMU_DISK0_NORMAL="
   -device ide-hd,bus=sata0.0,drive=drive-sata0-0-0,id=sata0-0-0,bootindex=1,write-cache=on \
@@ -36,7 +39,10 @@ QEMU_DISK="
   -device ide-hd,bus=sata0.1,drive=drive-sata0-0-1,id=sata0-0-1,write-cache=on \
   -drive file=$MEDIA,format=raw,if=none,id=drive-ide0-0-1,readonly=on \
   -drive if=none,id=drive-ide0-1-0,readonly=on \
-  -drive file=$DISK1,format=raw,if=none,id=drive-sata0-0-1,cache=none,aio=native "
+  -drive file=$DISK1,format=raw,if=none,id=drive-sata0-0-1,cache=none,aio=native"
+
+#  -device ide-hd,bus=sata0.2,drive=drive-sata0-0-2,id=sata0-0-2,write-cache=on \
+#  -drive file=$DISK2,format=raw,if=none,id=drive-sata0-0-2,cache=none,aio=native "
 
 QEMU_NET="
   -netdev bridge,id=hostnet0,br=qemubr0 -device $NET_DRIVE,netdev=hostnet0,id=net0,mac=52:54:00:d0:18:84,bus=pci.0,addr=0x3 \
@@ -46,9 +52,9 @@ QEMU_NET="
 QEMU_MOUSE="
   -device usb-tablet,id=input1,bus=usb0.0,port=1"
 
-QEMU_USB_REDIR="
-  -device usb-host,hostbus=1,hostaddr=4,id=hostdev0,bus=usb0.0,port=2 \
-  -device usb-host,hostbus=1,hostaddr=3,id=hostdev1,bus=usb0.0,port=3"
+#QEMU_USB_REDIR="
+#  -device usb-host,hostbus=1,hostaddr=4,id=hostdev0,bus=usb0.0,port=2 \
+#  -device usb-host,hostbus=1,hostaddr=3,id=hostdev1,bus=usb0.0,port=3"
 
 QEMU_USB2="
   -device ich9-usb-ehci1,id=usb \

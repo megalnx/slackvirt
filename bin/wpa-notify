@@ -1,12 +1,14 @@
 #!/bin/bash
 
+ICON=/usr/share/pixmaps/wpa_gui.png
+
 case "$2" in
 	CONNECTED)
-	  DISPLAY=:0.0 notify-send "WPA supplicant:" "$1 connected";
-#	  tmux display-message '$1 connected'
+	  DISPLAY=:0.0 notify-send -i $ICON "WPA supplicant:" "$1 connected";
+	  tmux display-message "$1 connected"
 	;;
 	DISCONNECTED)
-	  DISPLAY=:0.0 notify-send "WPA supplicant:" "$1 disconnected";
-#	  tmux display-message '$1 disconnected'
+	  DISPLAY=:0.0 notify-send -i $ICON "WPA supplicant:" "$1 disconnected";
+	  tmux display-message "$1 disconnected"
 	;;
 esac

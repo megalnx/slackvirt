@@ -12,7 +12,7 @@ echo "
 #####################
  Loading $0
 #####################" > /dev/console
-sh /root/sbin/intel-performance-state.sh performance
+sh /usr/local/sbin/intel-performance-state.sh performance
 
 if [ -x /usr/local/etc/rc.d/rc.cryptsetup ]; then
   /usr/local/etc/rc.d/rc.cryptsetup start 
@@ -63,13 +63,13 @@ sh /usr/local/sbin/iptables-br.sh start
 sh /usr/local/sbin/iptables-lxc.sh start
 sh /usr/local/sbin/iptables-wlan0_ap.sh start
 
-gkrellmd -m 2 -A 192.168.10.1 -d  
+gkrellmd -m 2 -A 192.168.30.1 -d  
 
 
 # ssh after libvirt for bridge connection
 [ -x /usr/local/etc/rc.d/rc.sshd ] && /usr/local/etc/rc.d/rc.sshd start
 
-sh /root/sbin/intel-performance-state.sh powersave
+sh /usr/local/sbin/intel-performance-state.sh powersave
 
 $(sleep 2 && chvt 2) &
 $(sleep 4 && chvt 3) &

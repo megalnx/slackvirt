@@ -41,6 +41,8 @@ function start(){
 
   # enable socket over network
   /usr/local/sbin/wpa_socket server
+
+  iptraf -i wlan0-ap -L /var/log/iptraf_wlan0-ap -B
 }
 
 function stop(){
@@ -52,6 +54,7 @@ function stop(){
 
   /usr/sbin/iw $IFW_sta del
   /usr/sbin/iw $IFW_ap del
+  pkill iptraf
 }
 
 case $1 in

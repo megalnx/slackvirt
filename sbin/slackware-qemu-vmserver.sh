@@ -19,6 +19,7 @@ MEDIA=${MEDIA:-"/media/cdrom"}
 # QEMU settings
 ###########################################
 VMCMD=${QEMU_CMD:-"qemu-system-x86_64 -enable-kvm"}
+QMP_PATH=/usr/local/share/qemu/qmp
 
 
 CFG_FILE=$2
@@ -46,16 +47,18 @@ function install_vm(){
 }
 
 function start_vm(){
- $0 status | head -n1 | grep -q "not running"
+ $0 status $CFG_FILE | head -n1 | grep -q "VM not running"
  if [ "$?" == "1" ]; then
    echo "VM $VMNAME already running."
    exit
  fi
 
- $VMCMD -name guest=$VMNAME \
+#    -chardev socket,id=monitor,path=/tmp/$VMNAME-monitor.sock,server,nowait -monitor chardev:monitor \
+
+ VMCMD="$VMCMD -name guest=$VMNAME \
     -m $MEMORY \
-    $MACHINE $CPU \
-    -chardev socket,id=monitor,path=/tmp/$VMNAME-monitor.sock,server,nowait -monitor chardev:monitor \
+    $MACHINE $CPU $SMP \
+    -qmp unix:/tmp/$VMNAME-monitor.sock,server,nowait -monitor stdio \
     -chardev socket,id=serial0,path=/tmp/$VMNAME-console.sock,server,nowait -serial chardev:serial0 \
     $QEMU_CONTROLLERS \
     $QEMU_SERIAL \
@@ -65,51 +68,104 @@ function start_vm(){
     $QEMU_NET \
     $QEMU_EXTRA \
     $QEMU_SPICE \
-    $QEMU_MOUSE &
+    $QEMU_MOUSE"
+
+  if [ ! -f "/srv/qemu/$VMNAME-statefile.gz" ]; then
+    $VMCMD &
+  else
+    echo "gzip -c -d /srv/qemu/$VMNAME-statefile.gz | $VMCMD -incoming \"exec: cat\" "
+  fi
 }
 
 function stop_vm(){
   POWERDOWN_CMD="system_powerdown"
+  SOCKET=/tmp/$VMNAME-monitor.sock
   echo "Shutdown VM: $VMNAME"
   sleep 0.4
   i=0;
 
-  minicom -D "unix#/tmp/$VMNAME-monitor.sock" \
-          -C /root/$VMNAME-monitor.minicom \
-	  -S /usr/local/etc/minicom/shutdown-vms.sh > /dev/null &
+#  minicom -D "unix#$SOCKET" \
+#          -C /root/$VMNAME-monitor.minicom \
+#	   -S /usr/local/etc/minicom/shutdown-vms.sh > /dev/null &
+  echo "$POWERDOWN_CMD" | $QMP_PATH/qmp-shell -p $SOCKET > /dev/null &
+
   while [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" != "" ]; do
-    sleep 0.4; echo -n "."
-#    i=( i + 1 );
-#    [ "$i" == "20" ] && break; stop_vm
+    sleep 0.5; echo -n "."
+    i=$(( i + 1 ));
+    if [ "$i" == "240" ];then
+      echo "force off"
+      echo "quit" | $QMP_PATH/qmp-shell -p $SOCKET > /dev/null &      
+      sleep 0.4
+      kill -9 $(pgrep -f "$VMCMD*.*guest=$VMNAME") &> /dev/null
+      break
+    fi
   done
+  echo ""
+}
+
+function wakeup_vm(){
+  POWERDOWN_CMD="system_wakeup"
+  SOCKET=/tmp/$VMNAME-monitor.sock
+  echo "Wakeup VM: $VMNAME"
+  sleep 0.4
+  i=0;
+
+#  minicom -D "unix#$SOCKET" \
+#          -C /root/$VMNAME-monitor.minicom \
+#	   -S /usr/local/etc/minicom/wakeup-vms.sh > /dev/null &
+
+  echo "$POWERDOWN_CMD" | $QMP_PATH/qmp-shell -p $SOCKET > /dev/null &
   echo ""
 }
 
 function resume_vm(){
   POWERDOWN_CMD="cont"
+  SOCKET=/tmp/$VMNAME-monitor.sock
   echo "Resume VM: $VMNAME"
   sleep 0.4
   i=0;
 
-  minicom -D "unix#/tmp/$VMNAME-monitor.sock" \
-          -C /root/$VMNAME-monitor.minicom \
-	  -S /usr/local/etc/minicom/resume-vms.sh > /dev/null &
+#  minicom -D "unix#$SOCKET" \
+#          -C /root/$VMNAME-monitor.minicom \
+#	   -S /usr/local/etc/minicom/resume-vms.sh > /dev/null &
+
+  echo "$POWERDOWN_CMD" | $QMP_PATH/qmp-shell -p $SOCKET > /dev/null &
   echo ""
 }
 
 function pause_vm(){
   POWERDOWN_CMD="cont"
+  SOCKET=/tmp/$VMNAME-monitor.sock
   echo "Pause VM: $VMNAME"
   sleep 0.4
   i=0;
 
-  minicom -D "unix#/tmp/$VMNAME-monitor.sock" \
-          -C /root/$VMNAME-monitor.minicom \
-	  -S /usr/local/etc/minicom/pause-vms.sh > /dev/null &
+#  minicom -D "unix#$SOCKET" \
+#          -C /root/$VMNAME-monitor.minicom \
+#	   -S /usr/local/etc/minicom/pause-vms.sh > /dev/null &
+  
+  echo "$POWERDOWN_CMD" | $QMP_PATH/qmp-shell -p $SOCKET > /dev/null &
   echo ""
 }
 
+function save_vm(){
+  pause_vm
+  echo "Save VM state: $VMNAME"
+  sleep 0.4
+  i=0;
 
+  VMNAME=$VMNAME minicom -D "unix#/tmp/$VMNAME-monitor.sock" \
+          -C /root/$VMNAME-monitor.minicom \
+	  -S /usr/local/etc/minicom/save-vms.sh > /dev/null &
+  echo ""
+}
+
+function load_vm(){
+  POWERDOWN_CMD="cont"
+  echo "Load VM state: $VMNAME"
+  sleep 0.4
+  start_vm
+}
 
 function list_vms(){
   # this shows all vms running by qemu
@@ -150,6 +206,10 @@ case $1 in
 	  [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" == "" ] && exit
   	  stop_vm
 	  	;;
+	wakeup)
+	  [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" == "" ] && exit
+  	  wakeup_vm
+	  	;;
 	resume)
 	  [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" == "" ] && exit
   	  resume_vm
@@ -157,6 +217,14 @@ case $1 in
 	pause)
 	  [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" == "" ] && exit
   	  pause_vm
+	  	;;
+	save)
+	  [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" == "" ] && exit
+  	  save_vm
+	  	;;
+	load)
+	  [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" == "" ] && exit
+  	  load_vm
 		;;
 	configure)
 	  cfg_vm
@@ -164,6 +232,7 @@ case $1 in
 	status)
   	  if [ "$(pgrep -f "$VMCMD*.*guest=$VMNAME")" == "" ]; then
 	    echo "VM not running"
+	    exit
           else
 	    echo "VM running"
 	    ps -o pid,%cpu,%mem,cmd $(pgrep -f "$VMCMD*.*guest=$VMNAME")

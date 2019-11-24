@@ -14,7 +14,7 @@ FORWARD -s $IPNET -i $IFNET -j ACCEPT
 FORWARD -i $IFNET -o $IFNET -j ACCEPT
 
 FORWARD -d $IPNET -o $NATIF -m state --state RELATED,ESTABLISHED -j ACCEPT
-#POSTROUTING -tnat -o wlan0-sta -j MASQUERADE
+
 POSTROUTING -tnat -o wlan0-sta -s 192.168.10.0/24 -j MASQUERADE
 POSTROUTING -tnat -o wlan0-sta -d 192.168.10.0/24 -j MASQUERADE
 
@@ -24,6 +24,7 @@ POSTROUTING -tnat -s $IPNET ! -d $IPNET -p tcp -j MASQUERADE --to-ports 1024-655
 POSTROUTING -tnat -s $IPNET ! -d $IPNET -p udp -j MASQUERADE --to-ports 1024-65535
 POSTROUTING -tnat -s $IPNET ! -d $IPNET -j MASQUERADE
 "
+#POSTROUTING -tnat -o wlan0-sta -j MASQUERADE
 
 function start(){
 IFS='
